@@ -2,7 +2,7 @@ public with sharing class ExternalHttpRequestExample {
 
     public static void iteratingThroughResponse() {
         HttpResponse response = sendTestRequest();
-        JSONParser parser = JSON.createParser(getResponseBody(response));
+        JSONParser parser = JSON.createParser((String)JSON.deserializeUntyped(response.getBody()));
         while (parser.nextToken() != null) {
             if ((parser.getCurrentToken() == JSONToken.FIELD_NAME) &&
                     (parser.getText() == 'name')) {
@@ -19,7 +19,7 @@ public with sharing class ExternalHttpRequestExample {
 
     public static void parseResponseIntoCustomObjects() {
         HttpResponse response = sendTestRequest();
-        List<Order> orders = (List<Order>) JSON.deserialize(getResponseBody(response), List<Order>.class);
+        List<Order> orders = (List<Order>) JSON.deserialize((String)JSON.deserializeUntyped(response.getBody()), List<Order>.class);
         for (Order order : orders) {
             System.debug('order: ' + order);
         }
@@ -32,12 +32,6 @@ public with sharing class ExternalHttpRequestExample {
         request.setHeader('Content-Type', 'application/json');
         request.setMethod('GET');
         return transport.send(request);
-    }
-
-    private static String getResponseBody(HttpResponse response) {
-        JSONParser parser = JSON.createParser(response.getBody());
-        parser.nextToken();
-        return parser.getText();
     }
 
     private class Order {
